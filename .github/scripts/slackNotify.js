@@ -33,15 +33,32 @@ async function getTicketNumber() {
     }
 }
 
+async function getCommitMessage() {
+    try {
+        const eventPath = process.env.GITHUB_EVENT_PATH;
+        if (!eventPath) throw new Error("GITHUB_EVENT_PATH not found");
+
+        const eventData = JSON.parse(await fs.readFile(eventPath, "utf8"));
+        const commitMessage = eventData?.head_commit?.message || null;
+
+        // Extract "PI-XXXX" ticket number
+        return commitMessage
+    } catch (error) {
+        console.error("❌ Failed to read PR title:", error.message);
+        return "UNKNOWN-TICKET";
+    }
+}
+
 // Send Slack Notification
 (async () => {
     const ticketNumber = await getTicketNumber();
+    const commitMessage = await getCommitMessage()
 
     let message;
     if (status === "success") {
-        message = successMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch);
+        message = successMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch, commitMessage);
     } else if (status === "failure") {
-        message = failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch);
+        message = failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch, commitMessage);
     } else {
         console.error("❌ Invalid status provided. Use 'success' or 'failure'.");
         process.exit(1);

@@ -1,10 +1,10 @@
-export function successMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch) {
+export function successMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch, commitMessage) {
     const jiraBaseUrl = "https://audacitygit.atlassian.net/browse/";
     const jiraUrl = `${jiraBaseUrl}${ticketNumber}`;
 
     return {
         text: `
-        =============================================== \n
+        \n
         ✅ *${jobName}* Succeeded in *${repo}* 🎉\n
         🔹 *Ticket:* \`${ticketNumber}\`\n
         🔹 *Commit SHA:* \`${sha}\`\n
@@ -13,7 +13,8 @@ export function successMessage(jobName, repo, ticketNumber, actor, runUrl, sha, 
         🛠 Triggered by: *${actor}*\n
         🔗 <${runUrl}|View Job>\n
         📌 View Ticket: <${jiraUrl}|Ticket>\n
-        ================================================
+        🔹 *Commit Message:* \`${commitMessage ? commitMessage : "None"}\`\n
+        ______________________________________________
         `
     };
 }
