@@ -4,8 +4,8 @@ export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, 
 
     return {
         text: `
-        =============================================== \n
-        ✅ *${jobName}* Succeeded in *${repo}* 🎉\n
+       \n
+        🚨 *${jobName}* Failed in *${repo}* 😭\n
         🔹 *Ticket:* \`${ticketNumber}\`\n
         🔹 *Commit SHA:* \`${sha}\`\n
         🔹 *Branch:* \`${branch}\`\n
@@ -13,7 +13,7 @@ export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, 
         🛠 Triggered by: *${actor}*\n
         🔗 <${runUrl}|View Job>\n
         📌 View Ticket: <${jiraUrl}|Ticket>\n
-        ================================================
+        ______________________________________________
         `
     };
 }
