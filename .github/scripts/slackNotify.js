@@ -1,5 +1,5 @@
 import axios from "axios";
-import fs from "fs/promises"; // ✅ Use ES Module-compatible file system
+import fs from "fs/promises";
 import { failureMessage } from "../templates/failureTemplate.js";
 import { successMessage } from "../templates/successTemplate.js";
 import process from "node:process";
@@ -9,54 +9,50 @@ const status = process.argv[3];      // "success" or "failure"
 const jobName = process.argv[4];     // Job name
 const repo = process.env.GITHUB_REPOSITORY || "Unknown Repo";
 const actor = process.env.GITHUB_ACTOR || "Unknown User";
+const sha = process.env.GITHUB_SHA?.substring(0, 7) || "Unknown SHA"; // Short SHA
+const actionType = process.env.GITHUB_EVENT_NAME || "Unknown Action";
 const runId = process.env.GITHUB_RUN_ID;
 const runUrl = `https://github.com/${repo}/actions/runs/${runId}`;
+const branch = process.env.GITHUB_REF?.replace(/^refs\/heads\//, "") || "Unknown Branch";
 
-let branch = "Unknown Branch";
+// Function to extract PR title and get the ticket number
+async function getTicketNumber() {
+    try {
+        const eventPath = process.env.GITHUB_EVENT_PATH;
+        if (!eventPath) throw new Error("GITHUB_EVENT_PATH not found");
 
-// Function to read GitHub event payload (async for ES Modules)
-async function getMergedBranch() {
-    if (process.env.GITHUB_EVENT_NAME === "pull_request") {
-        return process.env.GITHUB_HEAD_REF || "Unknown PR Branch"; // ✅ PRs: Get source branch
+        const eventData = JSON.parse(await fs.readFile(eventPath, "utf8"));
+        const prTitle = eventData?.pull_request?.title || "Unknown PR Title";
+
+        // Extract "PI-XXXX" ticket number
+        const ticketMatch = prTitle.match(/(PI-\d+)/);
+        return ticketMatch ? ticketMatch[1] : "UNKNOWN-TICKET";
+    } catch (error) {
+        console.error("❌ Failed to read PR title:", error.message);
+        return "UNKNOWN-TICKET";
     }
-
-    if (process.env.GITHUB_EVENT_NAME === "push") {
-        let branchName = process.env.GITHUB_REF?.replace(/^refs\/heads\//, "") || "Unknown Branch";
-
-        // Handle merge commits (when branch shows as "merge/3")
-        if (process.env.GITHUB_REF.includes("merge")) {
-            try {
-                const eventPath = process.env.GITHUB_EVENT_PATH;
-                if (eventPath) {
-                    const eventData = JSON.parse(await fs.readFile(eventPath, "utf8"));
-                    branchName = eventData?.pull_request?.head?.ref || "Unknown Merged Branch";
-                }
-            } catch (error) {
-                console.error("❌ Failed to read GitHub event payload:", error.message);
-            }
-        }
-        return branchName;
-    }
-
-    return "Unknown Branch";
 }
 
-// Run async function to get branch name and send Slack message
+
+// Send Slack Notification
 (async () => {
-    branch = await getMergedBranch();
+    const ticketNumber = await getTicketNumber();
 
     let message;
     if (status === "success") {
-        message = successMessage(jobName, repo, branch, actor, runUrl);
+        message = successMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch);
     } else if (status === "failure") {
-        message = failureMessage(jobName, repo, branch, actor, runUrl);
+        message = failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch);
     } else {
         console.error("❌ Invalid status provided. Use 'success' or 'failure'.");
         process.exit(1);
     }
 
-    // Debugging: Log extracted branch name
-    console.log(`✅ Extracted Branch Name: ${branch}`);
+    // Debugging: Log extracted values
+    console.log(`✅ Extracted Ticket Number: ${ticketNumber}`);
+    console.log(`✅ Extracted SHA: ${sha}`);
+    console.log(`✅ Extracted Action Type: ${actionType}`);
+    console.log(`✅ Extracted Branch: ${branch}`);
 
     // Send message to Slack
     axios
