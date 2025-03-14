@@ -1,7 +1,6 @@
 export function failureMessage(jobName, repo, ticketNumber, actor, runUrl) {
     const jiraBaseUrl = "https://audacitygit.atlassian.net/browse/";
-    const ticketId = ticketNumber.match(/^pi-\d+/)?.[0]?.toUpperCase() || "UNKNOWN-TICKET";
-    const jiraUrl = `${jiraBaseUrl}${ticketId}`;
+    const jiraUrl = `${jiraBaseUrl}${ticketNumber}`;
 
 
     return {
