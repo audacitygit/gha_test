@@ -3,6 +3,7 @@ export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, 
     const jiraUrl = `${jiraBaseUrl}${ticketNumber}`;
     const date = new Date()
     const formattedDate = date.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
         month: 'short',   // "Mar"
         day: 'numeric',   // "14"
         year: 'numeric',  // "2025"
@@ -22,7 +23,7 @@ export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, 
         🛠 Triggered by: *${actor}*\n
         🔗 <${runUrl}|View Job>\n
         📌 View Ticket: <${jiraUrl}|Ticket>\n
-        ⏱ Date: ${formattedDate}\n
+        ⏱ Date: ${formattedDate} EST\n
         ______________________________________________
         `
     };
