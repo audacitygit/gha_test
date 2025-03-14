@@ -25,7 +25,7 @@ async function validatePRTitle() {
     console.log(`🔍 Checking PR Title: "${prTitle}"`);
 
     // Ensure "PI-XXXX" appears anywhere in the PR title
-    const validPRPattern = /PI-\d+/;
+    const validPRPattern = /PI-\d+/i;
 
     if (!validPRPattern.test(prTitle)) {
         console.error(`🚨 PR Title "${prTitle}" does not contain "PI-XXXX".`);
