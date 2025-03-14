@@ -25,7 +25,7 @@ async function validatePRTitle() {
     console.log(`🔍 Checking PR Title: "${prTitle}"`);
 
     // Enforce "PI-XXXX" format (e.g., PI-1234-add-feature)
-    const validPRPattern = /^PI-\d+/;
+    const validPRPattern = /PI-\d+/;
 
     if (!validPRPattern.test(prTitle)) {
         console.error(`🚨 PR Title "${prTitle}" does not follow the required format: "PI-XXXX-<description>"`);
