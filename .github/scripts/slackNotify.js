@@ -25,7 +25,7 @@ async function getTicketNumber() {
         const prTitle = eventData?.pull_request?.title || "Unknown PR Title";
 
         // Extract "PI-XXXX" ticket number
-        const ticketMatch = prTitle.match(/(PI-\d+)/);
+        const ticketMatch = prTitle.match(/(PI-\d+)/i);
         return ticketMatch ? ticketMatch[1] : "UNKNOWN-TICKET";
     } catch (error) {
         console.error("❌ Failed to read PR title:", error.message);
