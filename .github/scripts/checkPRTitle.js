@@ -24,15 +24,15 @@ async function validatePRTitle() {
     const prTitle = await getPRTitle();
     console.log(`🔍 Checking PR Title: "${prTitle}"`);
 
-    // Enforce "PI-XXXX" format (e.g., PI-1234-add-feature)
+    // Ensure "PI-XXXX" appears anywhere in the PR title
     const validPRPattern = /PI-\d+/;
 
     if (!validPRPattern.test(prTitle)) {
-        console.error(`🚨 PR Title "${prTitle}" does not follow the required format: "PI-XXXX-<description>"`);
+        console.error(`🚨 PR Title "${prTitle}" does not contain "PI-XXXX".`);
 
         // Send Slack Notification
         const message = {
-            text: `🚨 *Invalid PR Title!* \n\n*PR:* "${prTitle}"\n\nPR titles must follow *PI-XXXX-description* format.\n❌ CI/CD will fail until this is fixed.`
+            text: `🚨 *Invalid PR Title!* \n\n*PR:* "${prTitle}"\n\nPR titles must include *PI-XXXX* anywhere.\n❌ CI/CD will fail until this is fixed.`
         };
 
         try {
@@ -47,6 +47,7 @@ async function validatePRTitle() {
         console.log("✅ PR Title is valid.");
     }
 }
+
 
 // Run the validation
 validatePRTitle();
