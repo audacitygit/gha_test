@@ -12,51 +12,52 @@ const actor = process.env.GITHUB_ACTOR || "Unknown User";
 const runId = process.env.GITHUB_RUN_ID;
 const runUrl = `https://github.com/${repo}/actions/runs/${runId}`;
 
-let branch = "Unknown Branch";
+// Function to extract PR title from GitHub event payload
+async function getPRTitle() {
+    try {
+        const eventPath = process.env.GITHUB_EVENT_PATH;
+        if (!eventPath) throw new Error("GITHUB_EVENT_PATH not found");
 
-// Function to read GitHub event payload (async for ES Modules)
-async function getMergedBranch() {
-    if (process.env.GITHUB_EVENT_NAME === "pull_request") {
-        return process.env.GITHUB_HEAD_REF || "Unknown PR Branch"; // ✅ PRs: Get source branch
+        const eventData = JSON.parse(await fs.readFile(eventPath, "utf8"));
+        return eventData?.pull_request?.title || "Unknown PR Title";
+    } catch (error) {
+        console.error("❌ Failed to read PR title:", error.message);
+        return "Unknown PR Title";
     }
-
-    if (process.env.GITHUB_EVENT_NAME === "push") {
-        let branchName = process.env.GITHUB_REF?.replace(/^refs\/heads\//, "") || "Unknown Branch";
-
-        // Handle merge commits (when branch shows as "merge/3")
-        if (process.env.GITHUB_REF.includes("merge")) {
-            try {
-                const eventPath = process.env.GITHUB_EVENT_PATH;
-                if (eventPath) {
-                    const eventData = JSON.parse(await fs.readFile(eventPath, "utf8"));
-                    branchName = eventData?.pull_request?.head?.ref || "Unknown Merged Branch";
-                }
-            } catch (error) {
-                console.error("❌ Failed to read GitHub event payload:", error.message);
-            }
-        }
-        return branchName;
-    }
-
-    return "Unknown Branch";
 }
 
-// Run async function to get branch name and send Slack message
+// Function to extract the ticket number from PR title
+async function getTicketNumber() {
+    const prTitle = await getPRTitle();
+    console.log(`🔍 Checking PR Title: "${prTitle}"`);
+
+    // Regex to extract "PI-XXXX" format
+    const ticketMatch = prTitle.match(/(PI-\d+)/);
+
+    if (ticketMatch) {
+        return ticketMatch[1]; // Return matched ticket number
+    } else {
+        console.error(`🚨 PR Title "${prTitle}" does not contain a valid ticket number (PI-XXXX).`);
+        return "UNKNOWN-TICKET";
+    }
+}
+
+// Run async function to get ticket number and send Slack message
 (async () => {
-    branch = await getMergedBranch();
+    const ticketNumber = await getTicketNumber();
 
     let message;
     if (status === "success") {
-        message = successMessage(jobName, repo, branch, actor, runUrl);
+        message = successMessage(jobName, repo, ticketNumber, actor, runUrl);
     } else if (status === "failure") {
-        message = failureMessage(jobName, repo, branch, actor, runUrl);
+        message = failureMessage(jobName, repo, ticketNumber, actor, runUrl);
     } else {
         console.error("❌ Invalid status provided. Use 'success' or 'failure'.");
         process.exit(1);
     }
 
-    // Debugging: Log extracted branch name
-    console.log(`✅ Extracted Branch Name: ${branch}`);
+    // Debugging: Log extracted ticket number
+    console.log(`✅ Extracted Ticket Number: ${ticketNumber}`);
 
     // Send message to Slack
     axios
