@@ -1,15 +1,11 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - "pi-*"
-      - "PI-*"
-  pull_request:
-    types:
-      - opened
-      - edited
-      - synchronize
+    pull_request:
+        types:
+        - opened
+        - edited
+        - synchronize
 
 jobs:
   pr-linter:
