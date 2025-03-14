@@ -39,6 +39,7 @@ async function getCommitMessage() {
         if (!eventPath) throw new Error("GITHUB_EVENT_PATH not found");
 
         const eventData = JSON.parse(await fs.readFile(eventPath, "utf8"));
+        console.log("EVENT DATA", eventData)
         const commitMessage = eventData?.head_commit?.message || null;
 
         // Extract "PI-XXXX" ticket number
