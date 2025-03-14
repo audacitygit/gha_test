@@ -1,4 +1,4 @@
-export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch, commitMessage) {
+export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, actionType, branch) {
     const jiraBaseUrl = "https://audacitygit.atlassian.net/browse/";
     const jiraUrl = `${jiraBaseUrl}${ticketNumber}`;
 
@@ -13,7 +13,6 @@ export function failureMessage(jobName, repo, ticketNumber, actor, runUrl, sha, 
         🛠 Triggered by: *${actor}*\n
         🔗 <${runUrl}|View Job>\n
         📌 View Ticket: <${jiraUrl}|Ticket>\n
-        🔹 *Commit Message:* \`${commitMessage ? commitMessage : "None"}\`\n
         ______________________________________________
         `
     };
